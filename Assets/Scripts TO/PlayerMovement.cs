@@ -13,7 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float vertiVelocity = 0;
     public float dashSpeed = 3;
     public float dashTime = 10;
-    private int frame = 0;
+    public float dashCooldown = 60;
+    private int dashFrame = 0;
     private bool DKeyDown = false;
     private bool AKeyDown = false;
     private bool WKeyDown = false;
@@ -28,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     {
         transform.position = new Vector2(0, 0);
         rb = GetComponent<Rigidbody2D>();
+        GameObject.Find("Player").GetComponent<Renderer>().material.color = new Color(255, 255, 255);
     }
 
 
@@ -77,7 +79,8 @@ public class PlayerMovement : MonoBehaviour
             // transform.Translate(Vector3.right * horiVelocity / totalVel * dashDistance);
             // transform.Translate(Vector3.up * vertiVelocity / totalVel * dashDistance);
                 dashPressed = true;
-                frame = 0;
+                dashFrame = 0;
+                GameObject.Find("Player").GetComponent<Renderer>().material.color = new Color(0, 0, 0);
             }
         }
     }
@@ -126,13 +129,22 @@ public class PlayerMovement : MonoBehaviour
         else if (vertiVelocity < -maxVel) {
             vertiVelocity = -maxVel;
         }
+        dashFrame += 1;
         if (dashPressed){
-        horiVelocity *= dashSpeed;
-        vertiVelocity *= dashSpeed;
-        frame += 1;
-        if (frame >= dashTime) {
-            dashPressed = false;
+            horiVelocity *= dashSpeed;
+            vertiVelocity *= dashSpeed;
+            if (dashFrame >= dashTime) {
+                dashPressed = false;
+                dashFrame = 0;
+                hasDash = false;
+            }
         }
+        else {
+            if (dashFrame >= dashCooldown) {
+                dashFrame = 0;
+                GameObject.Find("Player").GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+                hasDash = true;
+            }
         }
 
         transform.position += Vector3.right * horiVelocity * Time.deltaTime;
